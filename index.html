@@ -1,1 +1,27 @@
-The requested file reference is not currently visible. Use files.search or files.list to rediscover the file, then retry with a returned ref_id or file_id.
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CHRONUS — MTG Portal</title>
+<style>
+:root{--gold:#d4af37;--gold2:#fdf5d3;--bg:#070606;--panel:#12100e;--muted:#aaa092}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;color:#f0e6d2;font-family:Inter,system-ui,sans-serif;background:radial-gradient(circle at 50% 0,#282016 0,#0c0a09 38%,#030303 100%)}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.16;background-image:radial-gradient(#fff 1px,transparent 1px);background-size:5px 5px}
+.wrap{max-width:1180px;margin:auto;padding:28px 18px 60px}.hero{padding:42px 10px 28px;text-align:center}.eyebrow{letter-spacing:4px;text-transform:uppercase;color:var(--gold);font-weight:800;font-size:.75rem}.hero h1{font-family:Georgia,serif;font-size:clamp(2.7rem,7vw,5.4rem);margin:8px 0;background:linear-gradient(#fff6c9,#d4af37,#80621b);-webkit-background-clip:text;color:transparent;text-shadow:0 8px 30px #000}.hero p{max-width:720px;margin:0 auto;color:#c9bdad;line-height:1.7}.bar{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:22px 0 30px}.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 17px;border:1px solid #8a6a1c;border-radius:10px;background:#17120d;color:var(--gold2);text-decoration:none;font-weight:800;cursor:pointer}.btn.primary{background:linear-gradient(135deg,#fdf5d3,#d4af37,#8a6a1c);color:#090705}.panel{border:1px solid #6d5318;background:rgba(15,12,10,.9);border-radius:18px;padding:22px;box-shadow:0 20px 60px #000}.panel h2{font-family:Georgia,serif;margin:0 0 6px}.panel>p{color:var(--muted);margin-top:0}.players{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-top:20px}.player{position:relative;min-height:150px;border:1px solid #493a19;border-radius:14px;padding:18px;background:linear-gradient(145deg,#18130e,#0b0908);transition:.2s}.player:hover{transform:translateY(-3px);border-color:var(--gold);box-shadow:0 10px 35px #000}.num{color:var(--gold);font-weight:900;font-size:.75rem;letter-spacing:2px}.player h3{margin:8px 0 5px;font-family:Georgia,serif}.player p{margin:0 0 16px;color:#9d9386;font-size:.9rem}.mana{display:flex;gap:5px}.mana i{width:15px;height:15px;border-radius:50%;display:block;border:1px solid #ffffff55}.w{background:#eee8cf}.u{background:#2f9eea}.b{background:#7e55a8}.r{background:#d64b36}.g{background:#42985b}.c{background:#999}.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:22px}.feature{padding:15px;border:1px solid #302718;border-radius:12px;background:#0d0b09}.feature b{color:var(--gold2)}.feature p{color:#958b7d;font-size:.9rem;line-height:1.5}.foot{text-align:center;color:#665d53;font-size:.8rem;margin-top:28px}
+</style>
+</head>
+<body><main class="wrap">
+<header class="hero"><div class="eyebrow">CHRONUS • MTG</div><h1>Portal dos Planeswalkers</h1><p>O ponto central da campanha: dez fichas de jogadores, salvamento local, retrato, rolagens, mana, feridas, equipamentos, magias e exportação em PDF/JSON.</p>
+<div class="bar"><a class="btn primary" href="ficha.html?slot=1">Abrir Ficha 1</a><button class="btn" onclick="window.print()">🖨️ Imprimir portal</button></div></header>
+<section class="panel"><h2>10 Fichas de Jogador</h2><p>Cada jogador possui um slot independente. Clique para abrir diretamente a ficha correspondente.</p><div class="players" id="players"></div></section>
+<section class="features">
+<div class="feature"><b>🎲 Motor de testes</b><p>Abordagem + Personalidade + Perícia, com Determinação separada em d12.</p></div>
+<div class="feature"><b>💠 Cinco cores de Mana</b><p>Branco, Azul, Preto, Vermelho e Verde, além do controle Incolor.</p></div>
+<div class="feature"><b>🩸 Feridas e condições</b><p>Trilha de 20 feridas com estados progressivos e cálculo automático.</p></div>
+<div class="feature"><b>💾 Portabilidade</b><p>Autosave, importação/exportação JSON e geração de PDF da ficha.</p></div>
+</section><div class="foot">CHRONUS — MTG • Fundação inicial do portal</div>
+</main>
+<script>
+const colors=['w','u','b','r','g','c'];const root=document.getElementById('players');
+for(let i=1;i<=10;i++){const a=document.createElement('a');a.className='player';a.href=`ficha.html?slot=${i}`;a.style.textDecoration='none';a.style.color='inherit';a.innerHTML=`<div class="num">JOGADOR ${i}</div><h3>Slot ${i}</h3><p>Ficha independente de campanha</p><div class="mana">${colors.map(c=>`<i class="${c}"></i>`).join('')}</div>`;root.appendChild(a)}
+</script></body></html>
