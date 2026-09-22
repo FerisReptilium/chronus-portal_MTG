@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CHRONUS — Portal Cloud Edition</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@600;700;900&family=Metamorphous&family=Noto+Sans:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  
+  <!-- SDK do Supabase via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <style>
+    :root {
+      --mtg-gold-light: #fdf5d3;
+      --mtg-gold-mid: #d4af37;
+      --mtg-gold-dark: #8a6a1c;
+      --mtg-gold-shadow: #3b2b07;
+      --mtg-gold-gradient: linear-gradient(135deg, var(--mtg-gold-light) 0%, var(--mtg-gold-mid) 45%, var(--mtg-gold-dark) 80%, var(--mtg-gold-shadow) 100%);
+      --card-border-outer: #0a0807;
+      --card-text: #f0e6d2;
+      --texture-noise: url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)" opacity="0.12"/></svg>');
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: radial-gradient(circle at center, #24201e 0%, #050404 100%);
+      color: var(--card-text);
+      font-family: 'Noto Sans', sans-serif;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .auth-banner {
+      width: 100%; max-width: 1120px; background: rgba(15, 12, 10, 0.95);
+      border: 1px solid var(--mtg-gold-dark); border-radius: 8px; padding: 12px 20px;
+      margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;
+      font-family: 'Cinzel', serif; font-size: 0.85rem; color: var(--mtg-gold-light);
+    }
+
+    .controls-bar {
+      margin-bottom: 25px;
+      display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; align-items: center;
+      background: rgba(15, 12, 10, 0.85);
+      padding: 12px 20px; border-radius: 50px;
+      border: 1px solid var(--mtg-gold-dark);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.9);
+      z-index: 20;
+    }
+
+    .slot-selector {
+      background: rgba(0,0,0,0.6); color: var(--mtg-gold-light);
+      border: 1px solid var(--mtg-gold-mid); padding: 6px 12px;
+      border-radius: 20px; font-family: 'Cinzel', serif; font-weight: bold; outline: none; cursor: pointer;
+    }
+
+    .action-btn {
+      background: var(--mtg-gold-gradient); color: #110e0c; border: 1px solid #ffeaad;
+      padding: 8px 18px; border-radius: 20px; font-family: 'Cinzel', serif; font-weight: 900; 
+      text-transform: uppercase; font-size: 0.75rem; cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.6); transition: all 0.2s;
+    }
+    .action-btn:hover { filter: brightness(1.2); transform: translateY(-2px); }
+
+    .mtg-card {
+      width: 100%; max-width: 1120px; 
+      background: var(--card-border-outer);
+      border-radius: 20px; padding: 12px;
+      box-shadow: 0 40px 80px rgba(0,0,0,1);
+      position: relative;
+    }
+    .mtg-card-inner {
+      background: linear-gradient(180deg, #27272a, #050505), var(--texture-noise);
+      background-blend-mode: overlay;
+      border: 4px solid #000;
+      border-image: var(--mtg-gold-gradient) 1;
+      padding: 20px 15px;
+      display: flex; flex-direction: column; gap: 15px;
+    }
+    .mtg-content-panel {
+      background: rgba(14, 11, 9, 0.95);
+      border: 2px solid var(--mtg-gold-dark);
+      padding: 15px;
+    }
+    .mtg-legendary-crown {
+      text-align: center;
+      background: linear-gradient(180deg, rgba(35,28,22,0.98), rgba(14,11,9,0.98));
+      border: 2px solid var(--mtg-gold-mid);
+      border-radius: 40px 40px 0 0;
+      padding: 10px 15px; margin: -25px -10px 15px -10px;
+    }
+    .mtg-legendary-crown h1 { font-family: 'Cinzel Decorative', serif; font-size: 1.8rem; background: var(--mtg-gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    
+    .field-group { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
+    .field-group label { font-family: 'Cinzel', serif; font-size: 0.75rem; font-weight: 900; color: var(--mtg-gold-light); min-width: 100px; }
+    .field-group input { flex: 1; background: rgba(0,0,0,0.4); border: none; border-bottom: 1.5px solid var(--mtg-gold-dark); padding: 4px 8px; font-size: 0.9rem; color: #fff; outline: none; }
+  </style>
+</head>
+<body>
+
+  <div class="auth-banner" id="authBanner">
+    <span id="userInfo">A verificar sessão no portal...</span>
+    <button class="action-btn" id="authBtn" onclick="app.handleAuthAction()">Entrar</button>
+  </div>
+
+  <div class="controls-bar">
+    <select id="slotSelect" class="slot-selector" onchange="app.switchSlot()">
+      <option value="1">Slot 1</option>
+      <option value="2">Slot 2</option>
+      <option value="3">Slot 3</option>
+    </select>
+    <button class="action-btn" onclick="app.saveToCloud()">☁️ Sincronizar Nuvem</button>
+    <button class="action-btn" onclick="app.exportJSON()">📥 Exportar JSON</button>
+  </div>
+
+  <div class="mtg-card" id="card">
+    <div class="mtg-card-inner">
+      <div class="mtg-content-panel">
+        <div class="mtg-legendary-crown">
+          <h1>CHRONUS PORTAL</h1>
+        </div>
+        <div class="field-group">
+          <label>NOME:</label>
+          <input type="text" data-id="charName" placeholder="Nome do Personagem">
+        </div>
+        <div class="field-group">
+          <label>CONCEITO:</label>
+          <input type="text" data-id="charConcept" placeholder="Conceito / Guilda">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // CREDENCIAIS OFICIAIS DO SUPABASE CONFIGURADAS
+    const SUPABASE_URL = 'https://drsdohivbrmlmvrgklol.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_Y9FfzMibUT5KsM13z9DM_A_YBOGBd2Z';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    class PortalSheetManager {
+      constructor() {
+        this.currentUser = null;
+        this.currentSlot = 1;
+        this.debounceTimer = null;
+      }
+
+      async init() {
+        const { data: { session } } = await supabase.auth.getSession();
+        this.currentUser = session?.user || null;
+        this.updateAuthUI();
+
+        if (this.currentUser) {
+          await this.loadFromCloud();
+        }
+
+        document.body.addEventListener('input', () => this.scheduleCloudSave());
+        document.body.addEventListener('change', () => this.scheduleCloudSave());
+      }
+
+      updateAuthUI() {
+        const info = document.getElementById('userInfo');
+        const btn = document.getElementById('authBtn');
+        if (this.currentUser) {
+          info.innerText = `Conectado como: ${this.currentUser.email}`;
+          btn.innerText = 'Sair';
+        } else {
+          info.innerText = 'Modo Offline / Não autenticado';
+          btn.innerText = 'Entrar';
+        }
+      }
+
+      async handleAuthAction() {
+        if (this.currentUser) {
+          await supabase.auth.signOut();
+          location.reload();
+        } else {
+          const email = prompt("Insere o teu e-mail para receber o link de acesso:");
+          if (email) {
+            const { error } = await supabase.auth.signInWithOtp({ email });
+            if (error) alert("Erro: " + error.message);
+            else alert("Link mágico enviado! Verifica o teu e-mail.");
+          }
+        }
+      }
+
+      scheduleCloudSave() {
+        clearTimeout(this.debounceTimer);
+        this.debounceTimer = setTimeout(() => {
+          this.saveToCloud();
+        }, 1000);
+      }
+
+      async saveToCloud() {
+        if (!this.currentUser) {
+          console.warn("Utilizador não autenticado. Dados mantidos apenas localmente.");
+          return;
+        }
+
+        const formData = {};
+        document.querySelectorAll('[data-id]').forEach(el => {
+          formData[el.dataset.id] = el.value;
+        });
+
+        const { error } = await supabase
+          .from('characters')
+          .upsert({
+            user_id: this.currentUser.id,
+            slot_index: this.currentSlot,
+            character_name: formData.charName || 'Sem Nome',
+            sheet_data: formData,
+            updated_at: new Date()
+          }, { onConflict: 'user_id, slot_index' });
+
+        if (error) console.error("Erro ao sincronizar com a nuvem:", error.message);
+        else console.info("Sincronizado na nuvem com sucesso!");
+      }
+
+      async loadFromCloud() {
+        if (!this.currentUser) return;
+
+        const { data, error } = await supabase
+          .from('characters')
+          .select('sheet_data')
+          .eq('user_id', this.currentUser.id)
+          .eq('slot_index', this.currentSlot)
+          .single();
+
+        if (error && error.code !== 'PGRST116') {
+          console.error("Erro ao carregar slot:", error.message);
+          return;
+        }
+
+        if (data && data.sheet_data) {
+          for (const [key, val] of Object.entries(data.sheet_data)) {
+            const el = document.querySelector(`[data-id="${key}"]`);
+            if (el) el.value = val;
+          }
+        } else {
+          this.clearUI();
+        }
+      }
+
+      async switchSlot() {
+        this.currentSlot = parseInt(document.getElementById('slotSelect').value);
+        this.clearUI();
+        if (this.currentUser) {
+          await this.loadFromCloud();
+        }
+      }
+
+      clearUI() {
+        document.querySelectorAll('[data-id]').forEach(el => el.value = '');
+      }
+
+      exportJSON() {
+        const formData = {};
+        document.querySelectorAll('[data-id]').forEach(el => formData[el.dataset.id] = el.value);
+        const blob = new Blob([JSON.stringify(formData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `ficha_slot_${this.currentSlot}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    }
+
+    const app = new PortalSheetManager();
+    window.addEventListener('DOMContentLoaded', () => app.init());
+  </script>
+</body>
+</html>
